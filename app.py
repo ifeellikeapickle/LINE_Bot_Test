@@ -69,7 +69,12 @@ def handle_message(event):
             )
         )
     else:
-        pass
+        line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=event.source.userId)]
+            )
+        )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
