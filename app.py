@@ -77,14 +77,8 @@ def handle_message(event):
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text="你哈囉了！請勿哈囉！")]
-            )
-        )
-    elif event.type == "unsend":
-        line_bot_api.reply_message_with_http_info(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text="為什麼要收回訊息？")]
+                messages=[TextMessage(text="你哈囉了！請勿哈囉！")],
+                notification_disabled=True
             )
         )
     else:
