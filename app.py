@@ -77,7 +77,9 @@ def handle_message(event):
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text="你哈囉了！請勿哈囉！")],
+                messages=[TextMessage(text="請勿哈囉！\n
+                                            第二行請勿哈囉！",
+                                      quoted_message_id=None)],
                 notification_disabled=True
             )
         )
