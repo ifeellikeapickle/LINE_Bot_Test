@@ -87,7 +87,7 @@ def handle_message(event):
                 messages=[TextMessage(text=event.source.user_id)]
             )
         )
-        print(event.source.user_id)
+        return event.source.user_id
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
