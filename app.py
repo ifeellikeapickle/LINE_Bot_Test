@@ -86,7 +86,7 @@ def handle_message(event):
             # "event.message.type = " + event.message.type + "\n"
             # "event.message.id = " + event.message.id + "\n"
             # "event.message.text = " + event.message.text + "\n"
-            # "event.message.mention.metionees = " + event.message.mention.mentionees + "\n"
+            # "event.message.mention.mentionees = " + event.message.mention.mentionees + "\n"
             # "event.message.quote_token = " + event.message.quote_token + "\n"
             # "event.message.quoted_message_id = " + event.message.quoted_message_id + "\n"
             f"請勿哈囉！\n"
@@ -100,7 +100,7 @@ def handle_message(event):
             f"event.message.type = {event.message.type}\n"
             f"event.message.id = {event.message.id}\n"
             f"event.message.text = {event.message.text}\n"
-            f"event.message.mention.metionees = {event.message.mention.metionees}\n"
+            f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
             f"event.message.quote_token = {event.message.quote_token}\n"
             f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
