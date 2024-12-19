@@ -80,6 +80,13 @@ def handle_message(event):
                 messages=[TextMessage(text="你哈囉了！請勿哈囉！")]
             )
         )
+    elif event.type == "unsend":
+        line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text="為什麼要收回訊息？")]
+            )
+        )
     else:
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
@@ -87,7 +94,6 @@ def handle_message(event):
                 messages=[TextMessage(text=event.source.user_id)]
             )
         )
-        return event.source.user_id
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
