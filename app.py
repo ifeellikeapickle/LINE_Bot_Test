@@ -74,24 +74,26 @@ def handle_message(event):
         line_bot_api = MessagingApi(api_client)
 
     if re.search(regex, event.message.text):
+        custom_text = (
+            "請勿哈囉！\n"
+            "event.type = " + event.type + "\n"
+            "event.source.type = " + event.source.type + "\n"
+            "event.source.user_id = " + event.source.user_id + "\n"
+            "event.timestamp = " + event.timestamp + "\n"
+            "event.mode = " + event.mode + "\n"
+            "event.webhook_event_id = " + event.webhook_event_id + "\n"
+            "event.delivery_context.is_redelivery = " + event.delivery_context.is_redelivery + "\n"
+            "event.message.type = " + event.message.type + "\n"
+            "event.message.id = " + event.message.id + "\n"
+            "event.message.text = " + event.message.text + "\n"
+            "event.message.mention.metionees = " + event.message.mention.mentionees + "\n"
+            "event.message.quote_token = " + event.message.quote_token + "\n"
+            "event.message.quoted_message_id = " + event.message.quoted_message_id + "\n"
+        )
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text="請勿哈囉！\n"
-                                            "event.type = " + event.type + "\n"
-                                            "event.source.type = " + event.source.type + "\n"
-                                            "event.source.user_id = " + event.source.user_id + "\n"
-                                            "event.timestamp = " + event.timestamp + "\n"
-                                            "event.mode = " + event.mode + "\n"
-                                            "event.webhook_event_id = " + event.webhook_event_id + "\n"
-                                            "event.delivery_context.is_redelivery = " + event.delivery_context.is_redelivery + "\n"
-                                            "event.message.type = " + event.message.type + "\n"
-                                            "event.message.id = " + event.message.id + "\n"
-                                            "event.message.text = " + event.message.text + "\n"
-                                            "event.message.mention.metionees = " + event.message.mention.mentionees + "\n"
-                                            "event.message.quote_token = " + event.message.quote_token + "\n"
-                                            "event.message.quoted_message_id = " + event.message.quoted_message_id + "\n"
-                                            )],
+                messages=[TextMessage(text=custom_text)],
                 notification_disabled=True
             )
         )
