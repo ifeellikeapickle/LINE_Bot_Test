@@ -21,6 +21,20 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+# If modifying these scopes, delete the file credentials.json.
+SERVICE_ACCOUNT_FILE = "credentials.json"
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+# The ID and range of a sample spreadsheet.
+SPREADSHEET_ID = "1jXOboYVudQq55lvhNRlwp0RuGnY05SPYUHza4tGWXJc"
+RANGE_NAME = "Sheet1!A2:C"
+
 app = Flask(__name__)
 
 # Load .env file
@@ -63,6 +77,32 @@ def get():
     }
     return jsonify(response)
 
+def append_values(values):
+
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+    try:
+        service = build("sheets", "v4", credentials=creds)
+
+        body = {"values": values}
+        result = (
+            service.spreadsheets()
+            .values()
+            .append(
+                spreadsheetId=SPREADSHEET_ID,
+                range=RANGE_NAME,
+                valueInputOption="USER_ENTERED",
+                body=body,
+            )
+            .execute()
+        )
+        print(f"{(result.get('updates').get('updatedCells'))} cells appended.")
+        return result
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
+
 keyword = "哈囉"
 allowed_chars = r".*"
 pattern = allowed_chars.join(keyword)
@@ -75,20 +115,6 @@ def handle_message(event):
 
     if re.search(regex, event.message.text):
         custom_text = (
-            # "請勿哈囉！\n"
-            # "event.type = " + event.type + "\n"
-            # "event.source.type = " + event.source.type + "\n"
-            # "event.source.user_id = " + event.source.user_id + "\n"
-            # "event.timestamp = " + event.timestamp + "\n"
-            # "event.mode = " + event.mode + "\n"
-            # "event.webhook_event_id = " + event.webhook_event_id + "\n"
-            # "event.delivery_context.is_redelivery = " + event.delivery_context.is_redelivery + "\n"
-            # "event.message.type = " + event.message.type + "\n"
-            # "event.message.id = " + event.message.id + "\n"
-            # "event.message.text = " + event.message.text + "\n"
-            # "event.message.mention.mentionees = " + event.message.mention.mentionees + "\n"
-            # "event.message.quote_token = " + event.message.quote_token + "\n"
-            # "event.message.quoted_message_id = " + event.message.quoted_message_id + "\n"
             f"請勿哈囉！\n"
             f"event.type = {event.type}\n"
             f"event.source.type = {event.source.type}\n"
@@ -100,7 +126,7 @@ def handle_message(event):
             f"event.message.type = {event.message.type}\n"
             f"event.message.id = {event.message.id}\n"
             f"event.message.text = {event.message.text}\n"
-            f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
+            # f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
             f"event.message.quote_token = {event.message.quote_token}\n"
             f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
@@ -115,9 +141,10 @@ def handle_message(event):
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=event.source.user_id)]
+                messages=[TextMessage(text="else")]
             )
         )
+        append_values([[event.source.user_id, event.message.id, event.message.text]])
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
