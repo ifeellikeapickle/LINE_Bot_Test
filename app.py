@@ -18,6 +18,7 @@ from linebot.v3.messaging import (
 )
 from linebot.v3.webhooks import (
     MessageEvent,
+    UnsendEvent,
     TextMessageContent
 )
 
@@ -115,20 +116,20 @@ def handle_message(event):
 
     if re.search(regex, event.message.text):
         custom_text = (
-            f"請勿哈囉！\n"
-            f"event.type = {event.type}\n"
-            f"event.source.type = {event.source.type}\n"
-            f"event.source.user_id = {event.source.user_id}\n"
-            f"event.timestamp = {event.timestamp}\n"
-            f"event.mode = {event.mode}\n"
-            f"event.webhook_event_id = {event.webhook_event_id}\n"
-            f"event.delivery_context.is_redelivery = {event.delivery_context.is_redelivery}\n"
-            f"event.message.type = {event.message.type}\n"
-            f"event.message.id = {event.message.id}\n"
-            f"event.message.text = {event.message.text}\n"
+            f"還敢哈囉啊！\n"
+            # f"event.type = {event.type}\n"
+            # f"event.source.type = {event.source.type}\n"
+            # f"event.source.user_id = {event.source.user_id}\n"
+            # f"event.timestamp = {event.timestamp}\n"
+            # f"event.mode = {event.mode}\n"
+            # f"event.webhook_event_id = {event.webhook_event_id}\n"
+            # f"event.delivery_context.is_redelivery = {event.delivery_context.is_redelivery}\n"
+            # f"event.message.type = {event.message.type}\n"
+            # f"event.message.id = {event.message.id}\n"
+            # f"event.message.text = {event.message.text}\n"
             # f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
-            f"event.message.quote_token = {event.message.quote_token}\n"
-            f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
+            # f"event.message.quote_token = {event.message.quote_token}\n"
+            # f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
         line_bot_api.reply_message_with_http_info(
             ReplyMessageRequest(
@@ -145,6 +146,11 @@ def handle_message(event):
             )
         )
         append_values([[event.source.user_id, event.message.id, event.message.text]])
+
+@handler.add(UnsendEvent)
+def handle_unsend(event):
+    if event.type == "unsend":
+        append_values([[event.source.user_id, event.unsend.message_id, "Unsend Event"]])
         
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
