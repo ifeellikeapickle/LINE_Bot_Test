@@ -94,8 +94,10 @@ def get_values():
             .execute()
         )
         rows = result.get("values", [])
-        print(f"{len(rows)} rows retrieved")
-        return len(rows)
+        return {
+            "row_count": len(rows),
+            "cell_value": rows[len(rows)][2]
+        }
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
@@ -161,16 +163,11 @@ def handle_message(event):
             )
         )
     else:
-        line_bot_api.reply_message_with_http_info(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text="Reply Token = " + event.reply_token)]
-            )
-        )
-        rows_count = get_values()
-        append_values([[event.source.user_id, event.message.id, f"{rows_count}"]])
+        append_values([[event.source.user_id, event.message.id, event.message.text]])
+        rowcount = get_values(["row_count"])
+        cellvalue = get_values(["cell_value"])
+        append_values([[event.source.user_id, event.message.id, f"{rowcount} rows and message is {cellvalue}"]])
         
-
 @handler.add(UnsendEvent)
 def handle_unsend(event):
     with ApiClient(configuration) as api_client:
