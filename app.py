@@ -144,7 +144,7 @@ def handle_message(event):
                 messages=[TextMessage(text="else")]
             )
         )
-        append_values([[event.source.user_id, event.message.id, event.message.text]])
+        append_values([["Test1", "Test2", "Test3"]])
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
