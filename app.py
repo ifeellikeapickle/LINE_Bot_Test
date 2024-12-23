@@ -79,6 +79,27 @@ def get():
     }
     return jsonify(response)
 
+def get_values():
+    
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    
+    try:
+        service = build("sheets", "v4", credentials=creds)
+
+        result = (
+            service.spreadsheets()
+            .values()
+            .get(spreadsheetId=SPREADSHEET_ID,
+                 range=RANGE_NAME)
+            .execute()
+        )
+        rows = result.get("values", [])
+        print(f"{len(rows)} rows retrieved")
+        return result
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
+
 def append_values(values):
 
     creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -147,6 +168,7 @@ def handle_message(event):
             )
         )
         append_values([[event.source.user_id, event.message.id, event.message.text]])
+        get_values()
 
 @handler.add(UnsendEvent)
 def handle_unsend(event):
