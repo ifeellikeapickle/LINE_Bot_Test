@@ -13,6 +13,7 @@ from linebot.v3.messaging import (
     Configuration,
     ApiClient,
     MessagingApi,
+    PushMessageRequest,
     ReplyMessageRequest,
     TextMessage
 )
@@ -149,8 +150,18 @@ def handle_message(event):
 
 @handler.add(UnsendEvent)
 def handle_unsend(event):
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        
     if event.type == "unsend":
         append_values([[event.source.user_id, event.unsend.message_id, "Unsend Event"]])
+        line_bot_api.push_message_with_http_info(
+            PushMessageRequest(
+                to=event.source.group_id,
+                messages=[TextMessage(text="還敢收回啊？")]
+            )
+        )
+        
         
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
