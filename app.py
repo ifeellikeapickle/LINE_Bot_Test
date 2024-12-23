@@ -95,7 +95,7 @@ def get_values():
         )
         rows = result.get("values", [])
         print(f"{len(rows)} rows retrieved")
-        return result
+        return len(rows)
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
@@ -167,8 +167,9 @@ def handle_message(event):
                 messages=[TextMessage(text="Reply Token = " + event.reply_token)]
             )
         )
-        append_values([[event.source.user_id, event.message.id, event.message.text]])
-        get_values()
+        rows_count = get_values()
+        append_values([[event.source.user_id, event.message.id, f"{rows_count}"]])
+        
 
 @handler.add(UnsendEvent)
 def handle_unsend(event):
