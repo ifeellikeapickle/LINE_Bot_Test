@@ -210,7 +210,7 @@ def handle_message(event):
     elif "clear" in event.message.text:
         clear_table()
     else:
-        append_values[["1", "2", "3"]]
+        append_values([["1", "2", event.message.text]])
         
 @handler.add(UnsendEvent)
 def handle_unsend(event):
