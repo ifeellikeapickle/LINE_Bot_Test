@@ -94,10 +94,7 @@ def get_values():
             .execute()
         )
         rows = result.get("values", [])
-        return {
-            "row_count": len(rows),
-            "last_row_message": rows[len(rows)-1][2]
-        }
+        return rows
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
@@ -210,8 +207,8 @@ def handle_message(event):
     elif "clear" in event.message.text:
         clear_table()
     else:
-        result = get_values()
-        if result["row_count"] >= 5:
+        row_array = get_values()
+        if len(row_array) >= 5:
             clear_table()
             append_values([[event.source.user_id, event.message.id, event.message.text]])
         else:
