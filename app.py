@@ -164,9 +164,8 @@ def handle_message(event):
         )
     else:
         append_values([[event.source.user_id, event.message.id, event.message.text]])
-        rowcount = get_values(["row_count"])
-        cellvalue = get_values(["cell_value"])
-        append_values([[event.source.user_id, event.message.id, f"{rowcount} rows and message is {cellvalue}"]])
+        result = get_values()
+        append_values([[event.source.user_id, event.message.id, f"{result["row_count"]} rows and the message is {result["cell_value"]}"]])
         
 @handler.add(UnsendEvent)
 def handle_unsend(event):
