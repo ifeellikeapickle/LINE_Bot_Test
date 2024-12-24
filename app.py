@@ -96,7 +96,7 @@ def get_values():
         rows = result.get("values", [])
         return {
             "row_count": len(rows),
-            "cell_value": rows[len(rows)-1][2]
+            "last_row_message": rows[len(rows)-1][2]
         }
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -210,7 +210,13 @@ def handle_message(event):
     elif "clear" in event.message.text:
         clear_table()
     else:
-        append_values([["1", "2", event.message.text]])
+        result = get_values()
+        if result["row_count"] >= 5:
+            clear_table()
+            append_values([[event.source.user_id, event.message.id, event.message.text]])
+        else:
+            append_values([[event.source.user_id, event.message.id, event.message.text]])
+            
         
 @handler.add(UnsendEvent)
 def handle_unsend(event):
@@ -225,7 +231,6 @@ def handle_unsend(event):
                 messages=[TextMessage(text="還敢收回啊？")]
             )
         )
-        
         
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
