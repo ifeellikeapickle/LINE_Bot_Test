@@ -221,18 +221,15 @@ def handle_unsend(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
-    if event.type == "unsend":
-        row_array = get_values()
-        for i in range(len(row_array)-1, -1, -1):
-            if row_array[i][1] == event.unsend.message_id:
-                line_bot_api.push_message_with_http_info(
-                PushMessageRequest(
-                    to=event.source.group_id,
-                    messages=[TextMessage(text=f"你是不是想說：「{row_array[i][2]}」?")]
-                    )
+    row_array = get_values()
+    for i in range(len(row_array)-1, -1, -1):
+        if row_array[i][1] == event.unsend.message_id:
+            line_bot_api.push_message_with_http_info(
+            PushMessageRequest(
+                to=event.source.group_id,
+                messages=[TextMessage(text=f"你是不是想說：「{row_array[i][2]}」?")]
                 )
-            else:
-                pass
+            )
             
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
