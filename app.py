@@ -101,6 +101,31 @@ def get_values():
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
+    
+def update_values(values):
+    
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    
+    try:
+        service = build("sheets", "v4", credentials=creds)
+        
+        body = {"values": values}
+        result = (
+            service.spreadsheets()
+            .values()
+            .update(
+                spreadsheetId=SPREADSHEET_ID,
+                range=RANGE_NAME,
+                valueInputOption="USER_ENTERED",
+                body=body,
+            )
+            .execute()
+        )
+        print(f"{result.get('updatedCells')} cells updated.")
+        return result
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
 
 def append_values(values):
 
@@ -123,7 +148,27 @@ def append_values(values):
         )
         print(f"{(result.get('updates').get('updatedCells'))} cells appended.")
         return result
-
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return error
+    
+def clear_table():
+    
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    
+    try:
+        service = build("sheets", "v4", credentials=creds)
+        
+        result = (
+            service.spreadsheets()
+            .values()
+            .clear(
+                spreadsheetId=SPREADSHEET_ID,
+                range=RANGE_NAME,
+            )
+            .execute()
+        )
+        return result
     except HttpError as error:
         print(f"An error occurred: {error}")
         return error
@@ -162,10 +207,10 @@ def handle_message(event):
                 notification_disabled=True
             )
         )
+    elif "clear" in event.message.text:
+        clear_table()
     else:
-        append_values([[event.source.user_id, event.message.id, event.message.text]])
-        result = get_values()
-        append_values([[event.source.user_id, event.message.id, f"{result['row_count']} rows and the message is {result['cell_value']}"]])
+        append_values[["1", "2", "3"]]
         
 @handler.add(UnsendEvent)
 def handle_unsend(event):
