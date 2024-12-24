@@ -179,7 +179,10 @@ regex = rf"{pattern}"
 def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
-
+          
+    row_array = get_values()
+    len_row_array = len(row_array)
+    
     if re.search(regex, event.message.text):
         custom_text = (
             f"還敢哈囉啊！\n"
@@ -207,27 +210,29 @@ def handle_message(event):
     elif "clear" in event.message.text:
         clear_table()
     else:
-        row_array = get_values()
-        if len(row_array) >= 5:
+        if len_row_array >= 5:
             clear_table()
             append_values([[event.source.user_id, event.message.id, event.message.text]])
         else:
             append_values([[event.source.user_id, event.message.id, event.message.text]])
             
-        
 @handler.add(UnsendEvent)
 def handle_unsend(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
     if event.type == "unsend":
-        append_values([[event.source.user_id, event.unsend.message_id, "Unsend Event"]])
-        line_bot_api.push_message_with_http_info(
-            PushMessageRequest(
-                to=event.source.group_id,
-                messages=[TextMessage(text="還敢收回啊？")]
-            )
-        )
-        
+        row_array = get_values()
+        for i in range(len(row_array)-1, -1, -1):
+            if row_array[i][1] == event.unsend.message_id:
+                line_bot_api.push_message_with_http_info(
+                PushMessageRequest(
+                    to=event.source.group_id,
+                    messages=[TextMessage(text=f"你是不是想說：「{row_array[i][2]}」?")]
+                    )
+                )
+            else:
+                pass
+            
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
