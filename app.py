@@ -96,7 +96,7 @@ def get_values():
         rows = result.get("values", [])
         return {
             "row_count": len(rows),
-            "cell_value": rows[len(rows)][2]
+            "cell_value": rows[len(rows)-1][2]
         }
     except HttpError as error:
         print(f"An error occurred: {error}")
