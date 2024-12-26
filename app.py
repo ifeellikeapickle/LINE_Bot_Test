@@ -15,6 +15,7 @@ from linebot.v3.messaging import (
     MessagingApi,
     PushMessageRequest,
     ReplyMessageRequest,
+    StickerMessage,
     TextMessage
 )
 from linebot.v3.webhooks import (
@@ -219,7 +220,19 @@ def handle_text_message(event):
             
 @handler.add(MessageEvent, message=StickerMessageContent)
 def handle_sticker_message(event):
-    append_values([[event.source.user_id, event.message.id, event.message.sticker_id]])
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        
+    line_bot_api.reply_message_with_http_info(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[StickerMessage(
+                    packageId=event.message.package_id
+                    stickerId=event.message.sticker_id)],
+                notification_disabled=True
+            )
+        )
+    
     
 @handler.add(UnsendEvent)
 def handle_unsend(event):
