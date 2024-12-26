@@ -227,7 +227,7 @@ def handle_sticker_message(event):
             ReplyMessageRequest(
                 reply_token=event.reply_token,
                 messages=[StickerMessage(
-                    packageId=event.message.package_id
+                    packageId=event.message.package_id,
                     stickerId=event.message.sticker_id)],
                 notification_disabled=True
             )
