@@ -20,6 +20,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import (
     MessageEvent,
     UnsendEvent,
+    StickerMessageContent,
     TextMessageContent
 )
 
@@ -176,7 +177,7 @@ pattern = allowed_chars.join(keyword)
 regex = rf"{pattern}"
 
 @handler.add(MessageEvent, message=TextMessageContent)
-def handle_message(event):
+def handle_text_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
           
@@ -216,6 +217,10 @@ def handle_message(event):
         else:
             append_values([[event.source.user_id, event.message.id, event.message.text]])
             
+@handler.add(MessageEvent, message=StickerMessageContent)
+def handle_sticker_message(event):
+    append_values([[event.source.user_id, event.message.id, event.message.sticker_id]])
+    
 @handler.add(UnsendEvent)
 def handle_unsend(event):
     with ApiClient(configuration) as api_client:
