@@ -163,11 +163,13 @@ def handle_unsend(event):
         
     all_messages = messages_ref.get()
     for key in all_messages:
-        if messages_ref.child(key).child("message_id").get() == event.unsend.message_id:
+        if messages_ref.child(key).child('message_id').get() == event.unsend.message_id:
             line_bot_api.push_message_with_http_info(
                 PushMessageRequest(
                     to=event.source.group_id,
-                    messages=[TextMessage(text=f"你是不是想要說：「{messages_ref.child(key).child("message_text").get()}」")]
+                    messages=[TextMessage(
+                        text=f"你是不是想要說：「{messages_ref.child(key).child('message_text').get()}」"
+                    )]
                 )
             )
         else:
