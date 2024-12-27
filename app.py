@@ -25,11 +25,9 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
 # If modifying these scopes, delete the file credentials.json.
 SERVICE_ACCOUNT_FILE = "credentials.json"
@@ -41,15 +39,23 @@ RANGE_NAME = "Sheet1!A2:C"
 
 app = Flask(__name__)
 
-# Load .env file
+# LINE Message API
 load_dotenv()
-
 channel_access_token = os.getenv("CHANNEL_ACCESS_TOKEN")
 channel_secret = os.getenv("CHANNEL_SECRET")
-
 configuration = Configuration(access_token=channel_access_token)
 handler = WebhookHandler(channel_secret)
 
+# Fetch the service account key JSON file contents
+cred = credentials.Certificate("serviceAccountKey_Test.json")
+
+# Initialize the app with a service account, granting admin privileges
+firebase_admin.initialize_app(cred, {
+    "databaseURL": "https://line-bot-test-4ae14-default-rtdb.asia-southeast1.firebasedatabase.app/"
+})
+
+# As an admin, the app has access to read and write all data, regradless of Security Rules
+messages_ref = db.reference("messages")
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -81,97 +87,6 @@ def get():
     }
     return jsonify(response)
 
-def get_values():
-    
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    
-    try:
-        service = build("sheets", "v4", credentials=creds)
-
-        result = (
-            service.spreadsheets()
-            .values()
-            .get(spreadsheetId=SPREADSHEET_ID,
-                 range=RANGE_NAME)
-            .execute()
-        )
-        rows = result.get("values", [])
-        return rows
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        return error
-    
-def update_values(values):
-    
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    
-    try:
-        service = build("sheets", "v4", credentials=creds)
-        
-        body = {"values": values}
-        result = (
-            service.spreadsheets()
-            .values()
-            .update(
-                spreadsheetId=SPREADSHEET_ID,
-                range=RANGE_NAME,
-                valueInputOption="USER_ENTERED",
-                body=body,
-            )
-            .execute()
-        )
-        print(f"{result.get('updatedCells')} cells updated.")
-        return result
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        return error
-
-def append_values(values):
-
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-
-    try:
-        service = build("sheets", "v4", credentials=creds)
-
-        body = {"values": values}
-        result = (
-            service.spreadsheets()
-            .values()
-            .append(
-                spreadsheetId=SPREADSHEET_ID,
-                range=RANGE_NAME,
-                valueInputOption="USER_ENTERED",
-                body=body,
-            )
-            .execute()
-        )
-        print(f"{(result.get('updates').get('updatedCells'))} cells appended.")
-        return result
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        return error
-    
-def clear_table():
-    
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    
-    try:
-        service = build("sheets", "v4", credentials=creds)
-        
-        result = (
-            service.spreadsheets()
-            .values()
-            .clear(
-                spreadsheetId=SPREADSHEET_ID,
-                range=RANGE_NAME,
-            )
-            .execute()
-        )
-        return result
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-        return error
-
 keyword = "哈囉"
 allowed_chars = r".*"
 pattern = allowed_chars.join(keyword)
@@ -181,10 +96,7 @@ regex = rf"{pattern}"
 def handle_text_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
-          
-    row_array = get_values()
-    len_row_array = len(row_array)
-    
+        
     if re.search(regex, event.message.text):
         custom_text = (
             f"還敢哈囉啊！\n"
@@ -209,14 +121,24 @@ def handle_text_message(event):
                 notification_disabled=True
             )
         )
-    elif "clear" in event.message.text:
-        clear_table()
     else:
-        if len_row_array >= 5:
-            clear_table()
-            append_values([[event.source.user_id, event.message.id, event.message.text]])
+        if len(messages_ref.get()) >= 3:
+            messages_ref.push({
+                "user_id": event.source.user_id,
+                "message_id": event.message.id,
+                "message_text": event.message.text
+            })
+            
+            # oldest_message is a "OrderedDict"
+            oldest_message = messages_ref.order_by_key().limit_to_first(1).get()
+            for key in oldest_message:
+                messages_ref.child(key).delete()
         else:
-            append_values([[event.source.user_id, event.message.id, event.message.text]])
+            messages_ref.push({
+                "user_id": event.source.user_id,
+                "message_id": event.message.id,
+                "message_text": event.message.text
+            })
             
 @handler.add(MessageEvent, message=StickerMessageContent)
 def handle_sticker_message(event):
@@ -224,30 +146,20 @@ def handle_sticker_message(event):
         line_bot_api = MessagingApi(api_client)
         
     line_bot_api.reply_message_with_http_info(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[StickerMessage(
-                    packageId=event.message.package_id,
-                    stickerId=event.message.sticker_id)],
-                notification_disabled=True
-            )
+        ReplyMessageRequest(
+            reply_token=event.reply_token,
+            messages=[StickerMessage(
+                packageId="8515",
+                stickerId="16581242"
+            )],
+            notification_disabled=True
         )
-    
+    )
     
 @handler.add(UnsendEvent)
 def handle_unsend(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
-    row_array = get_values()
-    for i in range(len(row_array)-1, -1, -1):
-        if row_array[i][1] == event.unsend.message_id:
-            line_bot_api.push_message_with_http_info(
-            PushMessageRequest(
-                to=event.source.group_id,
-                messages=[TextMessage(text=f"你是不是想說：「{row_array[i][2]}」?")]
-                )
-            )
-            
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
