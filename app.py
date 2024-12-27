@@ -161,5 +161,17 @@ def handle_unsend(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
+    all_messages = messages_ref.get()
+    for key in all_messages:
+        if messages_ref.child(key).child("message_id").get() == event.unsend.message_id:
+            line_bot_api.push_message_with_http_info(
+                PushMessageRequest(
+                    to=event.source.group_id,
+                    messages=[TextMessage(text=f"你是不是想要說：「{messages_ref.child(key).child("message_text").get()}」")]
+                )
+            )
+        else:
+            pass
+        
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
