@@ -136,7 +136,7 @@ def handle_text_message(event):
             "message_text": event.message.text
         })
         
-        if len(messages_ref.get()) >= MAX_MESSAGE_LENGTH:
+        if len(messages_ref.get()) > MAX_MESSAGE_LENGTH:
             # Variable oldest_message is a dictionary
             oldest_message = messages_ref.order_by_key().limit_to_first(1).get()
             for key in oldest_message:
@@ -157,25 +157,26 @@ def handle_sticker_message(event):
             notification_disabled=True
         )
     )
-    
+
 @handler.add(UnsendEvent)
 def handle_unsend(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
-    all_messages = messages_ref.get()
-    for key in all_messages:
-        if messages_ref.child(key).child('message_id').get() == event.unsend.message_id:
+    ordered_messages = messages_ref.order_by_child("order").get()
+    for key in ordered_messages:
+        if messages_ref.child(key).child("message_id").get() == event.unsend.message_id:
+            unsend_message = messages_ref.child(key).child("message_text").get()
             line_bot_api.push_message_with_http_info(
                 PushMessageRequest(
                     to=event.source.group_id,
                     messages=[TextMessage(
-                        text=f"你是不是想要說：「{messages_ref.child(key).child('message_text').get()}」"
+                        text=f"你是不是想要說：「{unsend_message}」"
                     )]
                 )
             )
         else:
             pass
-        
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
