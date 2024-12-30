@@ -114,6 +114,13 @@ def handle_text_message(event):
             )
         )
     else:
+        while messages_ref.get() == None:
+            messages_ref.push({
+                "order": 5,
+                "user_id": "UID",
+                "message_id": "MID",
+                "message_text": "Message Text"
+            })
         if len(messages_ref.get()) >= 5:
             order = 5 - len(messages_ref.get())
             
@@ -124,7 +131,7 @@ def handle_text_message(event):
                 "message_text": event.message.text
             })
             
-            # oldest_message is a "OrderedDict"
+            # Variable oldest_message is a dictionary
             oldest_message = messages_ref.order_by_key().limit_to_first(1).get()
             for key in oldest_message:
                 messages_ref.child(key).delete()
