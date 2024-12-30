@@ -29,14 +29,6 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
-# If modifying these scopes, delete the file credentials.json.
-SERVICE_ACCOUNT_FILE = "credentials.json"
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-# The ID and range of a sample spreadsheet.
-SPREADSHEET_ID = "1jXOboYVudQq55lvhNRlwp0RuGnY05SPYUHza4tGWXJc"
-RANGE_NAME = "Sheet1!A2:C"
-
 app = Flask(__name__)
 
 # LINE Message API
@@ -122,8 +114,11 @@ def handle_text_message(event):
             )
         )
     else:
-        if len(messages_ref.get()) >= 3:
+        if len(messages_ref.get()) >= 5:
+            order = 5 - len(messages_ref.get())
+            
             messages_ref.push({
+                "order": order,
                 "user_id": event.source.user_id,
                 "message_id": event.message.id,
                 "message_text": event.message.text
@@ -134,7 +129,10 @@ def handle_text_message(event):
             for key in oldest_message:
                 messages_ref.child(key).delete()
         else:
+            order = 5 - len(messages_ref.get())
+            
             messages_ref.push({
+                "order": order,
                 "user_id": event.source.user_id,
                 "message_id": event.message.id,
                 "message_text": event.message.text
