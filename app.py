@@ -29,6 +29,8 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
+MAX_MESSAGE_LENGTH = 5
+
 app = Flask(__name__)
 
 # LINE Message API
@@ -116,35 +118,30 @@ def handle_text_message(event):
     else:
         while messages_ref.get() == None:
             messages_ref.push({
-                "order": 5,
+                "order": 0,
                 "user_id": "UID",
                 "message_id": "MID",
                 "message_text": "Message Text"
             })
-        if len(messages_ref.get()) >= 5:
-            order = 5 - len(messages_ref.get())
             
-            messages_ref.push({
-                "order": order,
-                "user_id": event.source.user_id,
-                "message_id": event.message.id,
-                "message_text": event.message.text
-            })
-            
+        # Variable latest_message is a dictionary
+        latest_message = messages_ref.order_by_key().limit_to_last(1).get()
+        for key in latest_message:
+            order = messages_ref.child(key).child("order").get() - 1
+        
+        messages_ref.push({
+            "order": order,
+            "user_id": event.source.user_id,
+            "message_id": event.message.id,
+            "message_text": event.message.text
+        })
+        
+        if len(messages_ref.get()) >= MAX_MESSAGE_LENGTH:
             # Variable oldest_message is a dictionary
             oldest_message = messages_ref.order_by_key().limit_to_first(1).get()
             for key in oldest_message:
                 messages_ref.child(key).delete()
-        else:
-            order = 5 - len(messages_ref.get())
-            
-            messages_ref.push({
-                "order": order,
-                "user_id": event.source.user_id,
-                "message_id": event.message.id,
-                "message_text": event.message.text
-            })
-            
+
 @handler.add(MessageEvent, message=StickerMessageContent)
 def handle_sticker_message(event):
     with ApiClient(configuration) as api_client:
