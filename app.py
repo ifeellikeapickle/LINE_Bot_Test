@@ -105,7 +105,6 @@ def handle_text_message(event):
             # f"event.message.id = {event.message.id}\n"
             f"event.message.text = {event.message.text}\n"
             f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
-            f"event.message.mention.mentionees.user_id = {event.message.mention.mentionees.user_id}\n"
             # f"event.message.quote_token = {event.message.quote_token}\n"
             # f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
@@ -116,6 +115,17 @@ def handle_text_message(event):
                 notification_disabled=True
             )
         )
+    elif "標記" in event.message.text:
+        mentionees_list = event.message.mention.mentionees
+        for mentionee in mentionees_list:
+            if mentionee.user_id == "Ua385cbcb21b1c8e5b462b05e17984751":
+                line_bot_api.reply_message_with_http_info(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text="YES")],
+                        notification_disabled=True
+                    )
+                )
     else:
         # Push the first default message to the database
         while messages_ref.get() == None:
