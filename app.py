@@ -104,7 +104,7 @@ def handle_text_message(event):
             f"event.message.type = {event.message.type}\n"
             # f"event.message.id = {event.message.id}\n"
             f"event.message.text = {event.message.text}\n"
-            f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
+            # f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
             # f"event.message.quote_token = {event.message.quote_token}\n"
             # f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
@@ -129,10 +129,20 @@ def handle_text_message(event):
                             notification_disabled=True
                         )
                     )
+                    break
                 else:
                     pass
             else:
                 pass
+    elif "無人" in event.message.text:
+        if event.message.mention == None:
+            line_bot_api.reply_message_with_http_info(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text="No one is tagged.")],
+                    notification_disabled=True
+                )
+            )
     else:
         # Push the first default message to the database
         while messages_ref.get() == None:
