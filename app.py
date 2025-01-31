@@ -105,6 +105,7 @@ def handle_text_message(event):
             # f"event.message.id = {event.message.id}\n"
             f"event.message.text = {event.message.text}\n"
             f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
+            f"event.message.mention.mentionees.user_id = {event.message.mention.mentionees.user_id}\n"
             # f"event.message.quote_token = {event.message.quote_token}\n"
             # f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
