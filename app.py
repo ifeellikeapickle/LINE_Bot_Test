@@ -94,17 +94,17 @@ def handle_text_message(event):
     if re.search(regex, event.message.text):
         custom_text = (
             f"還敢哈囉啊！\n"
-            # f"event.type = {event.type}\n"
-            # f"event.source.type = {event.source.type}\n"
+            f"event.type = {event.type}\n"
+            f"event.source.type = {event.source.type}\n"
             # f"event.source.user_id = {event.source.user_id}\n"
             # f"event.timestamp = {event.timestamp}\n"
             # f"event.mode = {event.mode}\n"
             # f"event.webhook_event_id = {event.webhook_event_id}\n"
             # f"event.delivery_context.is_redelivery = {event.delivery_context.is_redelivery}\n"
-            # f"event.message.type = {event.message.type}\n"
+            f"event.message.type = {event.message.type}\n"
             # f"event.message.id = {event.message.id}\n"
-            # f"event.message.text = {event.message.text}\n"
-            # f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
+            f"event.message.text = {event.message.text}\n"
+            f"event.message.mention.mentionees = {event.message.mention.mentionees}\n"
             # f"event.message.quote_token = {event.message.quote_token}\n"
             # f"event.message.quoted_message_id = {event.message.quoted_message_id}\n"
         )
@@ -116,6 +116,7 @@ def handle_text_message(event):
             )
         )
     else:
+        # Push the first default message to the database
         while messages_ref.get() == None:
             messages_ref.push({
                 "order": 0,
@@ -129,6 +130,7 @@ def handle_text_message(event):
         for key in latest_message:
             order = messages_ref.child(key).child("order").get() - 1
         
+        # Push the current message to the database
         messages_ref.push({
             "order": order,
             "user_id": event.source.user_id,
@@ -136,6 +138,7 @@ def handle_text_message(event):
             "message_text": event.message.text
         })
         
+        # Delete the oldest message in the database
         if len(messages_ref.get()) > MAX_MESSAGE_LENGTH:
             # Variable oldest_message is a dictionary
             oldest_message = messages_ref.order_by_key().limit_to_first(1).get()
