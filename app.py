@@ -135,7 +135,7 @@ def handle_text_message(event):
             else:
                 pass
     elif "無人" in event.message.text:
-        if event.message.mention == None:
+        if event.message.mention is None:
             line_bot_api.reply_message_with_http_info(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
@@ -145,7 +145,7 @@ def handle_text_message(event):
             )
     else:
         # Push the first default message to the database
-        while messages_ref.get() == None:
+        while messages_ref.get() is None:
             messages_ref.push({
                 "order": 0,
                 "user_id": "UID",
