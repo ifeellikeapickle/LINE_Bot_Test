@@ -15,14 +15,16 @@ from linebot.v3.messaging import (
     MessagingApi,
     PushMessageRequest,
     ReplyMessageRequest,
+    TextMessage,
     StickerMessage,
-    TextMessage
+    ImageMessage
 )
 from linebot.v3.webhooks import (
     MessageEvent,
     UnsendEvent,
+    TextMessageContent,
     StickerMessageContent,
-    TextMessageContent
+    ImageMessageContent
 )
 
 import firebase_admin
@@ -184,6 +186,21 @@ def handle_sticker_message(event):
             messages=[StickerMessage(
                 packageId="8515",
                 stickerId="16581242"
+            )],
+            notification_disabled=True
+        )
+    )
+    
+@handler.add(MessageEvent, message=ImageMessageContent)
+def handle_image_message(event):
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        
+    line_bot_api.reply_message_with_http_info(
+        ReplyMessageRequest(
+            reply_token=event.reply_token,
+            messages=[TextMessage(
+                text=f"{event.message.content_provider.type}, {event.message.content_provider.original_content_url}, {event.message.content_provider.preview_image_url}, {event.message.image_set.id}, {event.message.image_set.index}, {event.message.image_set.total}"
             )],
             notification_disabled=True
         )
